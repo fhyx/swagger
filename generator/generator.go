@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -45,9 +46,16 @@ func generateSwaggerDocs(parser *parser.Parser, outputSpec string, pkg bool) err
 	}
 	defer fd.Close()
 
+	keys := make([]string, 0, len(parser.TopLevelApis))
+	for k := range parser.TopLevelApis {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var apiDescriptions bytes.Buffer
-	for apiKey, apiDescription := range parser.TopLevelApis {
+	for _, apiKey := range keys {
 		apiDescriptions.WriteString("\"" + apiKey + "\":")
+		apiDescription := parser.TopLevelApis[apiKey]
 
 		apiDescriptions.WriteString("`")
 		json, err := json.MarshalIndent(apiDescription, "", "    ")

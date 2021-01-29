@@ -21,10 +21,10 @@ func NewModel(p *Parser) *Model {
 	}
 }
 
-// modelName is something like package.subpackage.SomeModel or just "subpackage.SomeModel"
+// ParseModel modelName is something like package.subpackage.SomeModel or just "subpackage.SomeModel"
 func (m *Model) ParseModel(modelName string, currentPackage string, knownModelNames map[string]bool) (error, []*Model) {
 	knownModelNames[modelName] = true
-	//log.Printf("Before parse model |%s|, package: |%s|\n", modelName, currentPackage)
+	// log.Printf("Before parse model |%s|, package: |%s|\n", modelName, currentPackage)
 
 	astTypeSpec, modelPackage := m.parser.FindModelDefinition(modelName, currentPackage)
 
@@ -60,7 +60,7 @@ func (m *Model) ParseModel(modelName string, currentPackage string, knownModelNa
 			usedTypes[typeName] = true
 		}
 
-		//log.Printf("Before parse inner model list: %#v\n (%s)", usedTypes, modelName)
+		// log.Printf("Before parse inner model list: %#v\n (%s)", usedTypes, modelName)
 		innerModelList = make([]*Model, 0, len(usedTypes))
 
 		for typeName, _ := range usedTypes {
@@ -118,7 +118,10 @@ func (m *Model) ParseModelProperty(field *ast.Field, modelPackage string) {
 	property := NewModelProperty()
 
 	typeAsString := property.GetTypeAsString(field.Type)
-	//log.Printf("Get type as string %s \n", typeAsString)
+	// log.Printf("Get type as string %v: %s \n", field, typeAsString)
+	if strings.HasPrefix(typeAsString, "&{") {
+		return
+	}
 
 	// Sometimes reflection reports an object as "&{foo Bar}" rather than just "foo.Bar"
 	// The next 2 lines of code normalize them to foo.Bar
@@ -164,11 +167,10 @@ func (m *Model) ParseModelProperty(field *ast.Field, modelPackage string) {
 
 		//log.Fatalf("Here %#v\n", field.Type)
 		return
-	} else {
-		name = field.Names[0].Name
 	}
+	name = field.Names[0].Name
 
-	//log.Printf("ParseModelProperty: %s, CurrentPackage %s, type: %s \n", name, modelPackage, property.Type)
+	// log.Printf("ParseModelProperty: %q, CurrentPackage %s, type: %q \n", name, modelPackage, property.Type)
 	//Analyse struct fields annotations
 	if field.Tag != nil {
 		structTag := reflect.StructTag(strings.Trim(field.Tag.Value, "`"))

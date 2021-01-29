@@ -158,6 +158,7 @@ func (parser *Parser) CheckRealPackagePath(packagePath string) string {
 	if cachedResult, ok := parser.PackagePathCache[packagePath]; ok {
 		return cachedResult
 	}
+	log.Debugf("check packagePath %s", packagePath)
 
 	// Hack vendoring of 'golang.org/x' by the standard library
 	if strings.HasPrefix(packagePath, "golang_org/x/") {
